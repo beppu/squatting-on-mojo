@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use Data::Dump 'pp';
 
+our $VERSION = '0.01';
 our %p;
 
 $p{e} = sub {
@@ -61,4 +62,31 @@ sub mojo {
 
 1;
 
+__END__
 
+=head1 NAME
+
+Squatting::On::Mojo - squat on top of Mojo
+
+=head1 SYNOPSIS
+
+=head1 DESCRIPTION
+
+=head1 SEE ALSO
+
+=head1 AUTHOR
+
+John Beppu E<lt>john.beppu@gmail.comE<gt>
+
+=cut
+
+# Local Variables: ***
+# mode: cperl ***
+# indent-tabs-mode: nil ***
+# cperl-close-paren-offset: -2 ***
+# cperl-continued-statement-offset: 2 ***
+# cperl-indent-level: 2 ***
+# cperl-indent-parens-as-block: t ***
+# cperl-tab-always-indent: nil ***
+# End: ***
+# vim:tabstop=2 softtabstop=2 shiftwidth=2 shiftround expandtab
