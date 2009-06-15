@@ -1,7 +1,6 @@
 package Squatting::On::Mojo;
 use strict;
 use warnings;
-use Data::Dump 'pp';
 use CGI::Cookie;
 
 our $VERSION = '0.01';
@@ -13,14 +12,14 @@ $p{e} = sub {
   my $url = $req->url;
   my %env;
   $env{QUERY_STRING}   = $url->query || '';
-  $env{REQUEST_PATH}   = '/' . $url->path;
+  $env{REQUEST_PATH}   = $url->path->to_string;
   $env{REQUEST_URI}    = "$env{REQUEST_PATH}?$env{QUERY_STRING}";
   $env{REQUEST_METHOD} = $req->method;
   my $h = $req->headers->{_headers};
   for (keys %$h) {
     my $header = "HTTP_" . uc($_);
     $header =~ s/-/_/g;
-    $env{$header} = $h->{$header}[0]; # FIXME: I need to handle multiple occurrences of a header.
+    $env{$header} = $h->{$_}[0]; # FIXME: I need to handle multiple occurrences of a header.
   }
   \%env;
 };
@@ -42,16 +41,16 @@ $p{init_cc} = sub {
   $cc->headers = { 'Content-Type' => 'text/html' };
   $cc->v       = {};
   # $cc->state = ?
-  # $cc->log   = $tx->log
   $cc->status = 200;
   $cc;
 };
 
 sub mojo {
   no strict 'refs';
-  my ($app, $tx) = @_;
+  my ($app, $mojo, $tx) = @_;
   my ($c,   $p)  = &{ $app . "::D" }($tx->req->url->path);
   my $cc      = $p{init_cc}->($c, $tx);
+  $cc->log    = $mojo->log;
   my $content = $app->service($cc, @$p);
   my $h       = $tx->res->headers;
   my $ch      = $cc->headers;
@@ -79,13 +78,33 @@ Squatting::On::Mojo - squat on top of Mojo
 
 =head1 SYNOPSIS
 
+First, Create a Mojo app:
+
+  mojo generate app Foo
+  cd foo
+
+Then, Embed a Squatting app Into It:
+
+  $EDITOR lib/Foo.pm
+
+  use Pod::Server 'On::Mojo';
+  Pod::Server->init;
+
+  sub handler {
+    my ($self, $tx) = @_;
+    Pod::Server->mojo($self, $tx);
+    $tx;
+  }
+
 =head1 DESCRIPTION
 
 =head1 SEE ALSO
 
+L<Mojo>, L<Catalyst>, L<Squatting::On::Catalyst>
+
 =head1 AUTHOR
 
-John Beppu E<lt>john.beppu@gmail.comE<gt>
+John Beppu E<lt>beppu@cpan.orgE<gt>
 
 =cut
 
