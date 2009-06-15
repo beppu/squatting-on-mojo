@@ -81,10 +81,10 @@ Squatting::On::Mojo - squat on top of Mojo
 First, Create a Mojo app:
 
   mojo generate app Foo
-  cd foo
 
 Then, Embed a Squatting app Into It:
 
+  cd foo
   $EDITOR lib/Foo.pm
 
   use Pod::Server 'On::Mojo';
@@ -98,9 +98,24 @@ Then, Embed a Squatting app Into It:
 
 =head1 DESCRIPTION
 
+The purpose of this module is to allow Squatting apps to be embedded inside
+Mojo apps. This is done by adding a C<mojo> method to the Squatting app that
+knows how to translate between Mojo and Squatting. To use this module, pass
+the string 'On::Mojo' to the use statement that loads your Squatting app.
+
+=head1 API
+
+=head2 Refinements based on lessons learned from Catalyst
+
+=head3 App->mojo($mojo, $tx)
+
+Calling the mojo method will let the Squatting app handle the request.  The
+C<$tx> should have its L<Mojo::Message::Response> object populated by
+L<Squatting>, and C<$tx> should be ready to return when finished.
+
 =head1 SEE ALSO
 
-L<Mojo>, L<Catalyst>, L<Squatting::On::Catalyst>
+L<Mojo>, L<Catalyst>, L<Squatting::On::Catalyst>, L<Pod::Server>
 
 =head1 AUTHOR
 
