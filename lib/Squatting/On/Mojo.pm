@@ -2,6 +2,7 @@ package Squatting::On::Mojo;
 use strict;
 use warnings;
 use Data::Dump 'pp';
+use CGI::Cookie;
 
 our $VERSION = '0.01';
 our %p;
@@ -9,10 +10,10 @@ our %p;
 $p{e} = sub {
   my $tx  = shift;
   my $req = $tx->req;
-  my $uri = $req->uri;
+  my $url = $req->url;
   my %env;
-  $env{QUERY_STRING}   = $uri->query || '';
-  $env{REQUEST_PATH}   = '/' . $req->path;
+  $env{QUERY_STRING}   = $url->query || '';
+  $env{REQUEST_PATH}   = '/' . $url->path;
   $env{REQUEST_URI}    = "$env{REQUEST_PATH}?$env{QUERY_STRING}";
   $env{REQUEST_METHOD} = $req->method;
   my $h = $req->headers->{_headers};
@@ -28,7 +29,8 @@ $p{c} = sub {
   my $tx = shift;
   my $c  = $tx->req->cookies;
   my %k;
-  warn pp($c);
+  for (@$c) { $k{$_->name} = $_->value; }
+  \%k;
 };
 
 $p{init_cc} = sub {
@@ -36,7 +38,7 @@ $p{init_cc} = sub {
   my $cc = $c->clone;
   $cc->env     = $p{e}->($tx);
   $cc->cookies = $p{c}->($tx);
-  $cc->input   = $tx->req->parameters;
+  $cc->input   = $tx->req->params->to_hash;
   $cc->headers = { 'Content-Type' => 'text/html' };
   $cc->v       = {};
   # $cc->state = ?
@@ -46,16 +48,23 @@ $p{init_cc} = sub {
 };
 
 sub mojo {
+  no strict 'refs';
   my ($app, $tx) = @_;
-  my ($c,   $p)  = &{ $app . "::D" }('/' . $tx->req->path);
-  my $cc = $p{init_cc}->($c, $tx);
+  my ($c,   $p)  = &{ $app . "::D" }($tx->req->url->path);
+  my $cc      = $p{init_cc}->($c, $tx);
   my $content = $app->service($cc, @$p);
   my $h       = $tx->res->headers;
   my $ch      = $cc->headers;
-  for (keys %$ch) {
-    $h->headers($_ => $ch->{$_});
+  for my $header (keys %$ch) {
+    if (ref $ch->{$header} eq 'ARRAY') {
+      for my $item (@{ $ch->{$header} }) {
+        $h->add_line($header => $item);
+      }
+    } else {
+      $h->add_line($header => $ch->{$header});
+    }
   }
-  $tx->res->status($cc->status);
+  $tx->res->code($cc->status);
   $tx->res->body($content);
   $tx;
 }
