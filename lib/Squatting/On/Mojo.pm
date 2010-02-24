@@ -57,10 +57,10 @@ sub mojo {
   for my $header (keys %$ch) {
     if (ref $ch->{$header} eq 'ARRAY') {
       for my $item (@{ $ch->{$header} }) {
-        $h->add_line($header => $item);
+        $h->add($header => $item);
       }
     } else {
-      $h->add_line($header => $ch->{$header});
+      $h->add($header => $ch->{$header});
     }
   }
   $tx->res->code($cc->status);
