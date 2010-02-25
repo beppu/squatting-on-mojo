@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use CGI::Cookie;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 our %p;
 
 $p{e} = sub {
